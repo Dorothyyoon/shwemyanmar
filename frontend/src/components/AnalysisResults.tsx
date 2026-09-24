@@ -1,100 +1,172 @@
-const syllables = [
-  "ကျွန်",
-  "တော်",
-  "မ",
-  "နက်",
-  "ဖြန်",
-  "ကျောင်း",
-  "သွား",
-  "မယ်",
-  "။",
-];
+import type { ReactNode } from "react";
+import { useState } from "react";
 
-const words = ["ကျွန်တော်", "မနက်ဖြန်", "ကျောင်း", "သွား", "မယ်", "။"];
+import type { AnalysisResult } from "../types/analysis";
 
-const posTags = [
-  {
-    word: "ကျွန်တော်",
-    tag: "PRON",
-  },
-  {
-    word: "မနက်ဖြန်",
-    tag: "ADV",
-  },
-  {
-    word: "ကျောင်း",
-    tag: "NOUN",
-  },
-  {
-    word: "သွား",
-    tag: "VERB",
-  },
-  {
-    word: "မယ်",
-    tag: "AUX",
-  },
-  {
-    word: "။",
-    tag: "PUNCT",
-  },
-];
+import {
+  AudioWaveform,
+  Check,
+  Copy,
+  FileText,
+  Layers3,
+  Tag,
+} from "lucide-react";
+
+/* =========================================================
+   POS COLOR FUNCTION
+========================================================= */
 
 function getPosColor(tag: string) {
   switch (tag) {
     case "NOUN":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+      return `
+        border-emerald-200
+        bg-emerald-50
+        text-emerald-700
+      `;
 
     case "VERB":
-      return "border-rose-200 bg-rose-50 text-rose-700";
+      return `
+        border-rose-200
+        bg-rose-50
+        text-rose-700
+      `;
 
     case "PRON":
-      return "border-sky-200 bg-sky-50 text-sky-700";
+      return `
+        border-sky-200
+        bg-sky-50
+        text-sky-700
+      `;
 
     case "ADV":
-      return "border-amber-200 bg-amber-50 text-amber-700";
+      return `
+        border-amber-200
+        bg-amber-50
+        text-amber-700
+      `;
 
     case "AUX":
-      return "border-violet-200 bg-violet-50 text-violet-700";
+      return `
+        border-violet-200
+        bg-violet-50
+        text-violet-700
+      `;
+
+    case "ADJ":
+      return `
+        border-orange-200
+        bg-orange-50
+        text-orange-700
+      `;
 
     case "PUNCT":
-      return "border-stone-200 bg-stone-50 text-stone-600";
+      return `
+        border-stone-200
+        bg-stone-50
+        text-stone-600
+      `;
 
     default:
-      return "border-stone-200 bg-stone-50 text-stone-700";
+      return `
+        border-stone-200
+        bg-stone-50
+        text-stone-700
+      `;
   }
 }
 
-export default function AnalysisResults() {
-  return (
-    <section className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm">
-      {/* Title */}
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-stone-800">
-          Analysis Results
-        </h2>
+/* =========================================================
+   MAIN COMPONENT
+========================================================= */
+interface AnalysisResultsProps {
+  result: AnalysisResult;
+}
 
-        <p className="mt-1 text-sm text-stone-500">
-          Linguistic analysis of the submitted Burmese text.
-        </p>
+export default function AnalysisResults({ result }: AnalysisResultsProps) {
+  const { syllables, words, posTags } = result;
+  return (
+    <section
+      className="
+        rounded-2xl
+        border
+        border-amber-100
+        bg-white
+        p-5
+        shadow-[0_6px_25px_rgba(120,80,10,0.05)]
+      "
+    >
+      {/* =====================================================
+          ANALYSIS RESULTS HEADER
+      ====================================================== */}
+
+      <div className="mb-5 flex items-center gap-3">
+        <div
+          className="
+            flex
+            h-11
+            w-11
+            items-center
+            justify-center
+            rounded-xl
+            bg-gradient-to-br
+            from-amber-400
+            to-amber-600
+            text-white
+            shadow-sm
+          "
+        >
+          <FileText size={20} />
+        </div>
+
+        <div>
+          <h2
+            className="
+              font-serif
+              text-xl
+              font-bold
+              text-[#3D2914]
+            "
+          >
+            Analysis Results
+          </h2>
+
+          <p className="mt-0.5 text-sm text-stone-500">
+            Linguistic analysis of the submitted Burmese text.
+          </p>
+        </div>
       </div>
 
-      {/* Syllable Segmentation */}
+      {/* =====================================================
+          SYLLABLE SEGMENTATION
+      ====================================================== */}
+
       <ResultSection
         title="Syllable Segmentation"
-        description="Text segmented into syllables."
+        description="Text segmented into individual Burmese syllables."
+        icon={<AudioWaveform size={18} />}
+        iconStyle="
+          bg-amber-100
+          text-amber-600
+        "
+        copyText={syllables.join(" | ")}
       >
         <div className="flex flex-wrap gap-2">
           {syllables.map((syllable, index) => (
             <span
-              key={index}
+              key={`${syllable}-${index}`}
               className="
                 rounded-lg
                 border
                 border-amber-100
-                bg-amber-50
+                bg-[#FFF8E8]
                 px-4
                 py-2
+                text-[15px]
                 text-stone-800
+                transition
+                hover:border-amber-300
+                hover:bg-amber-100
               "
             >
               {syllable}
@@ -103,23 +175,36 @@ export default function AnalysisResults() {
         </div>
       </ResultSection>
 
-      {/* Word Segmentation */}
+      {/* =====================================================
+          WORD SEGMENTATION
+      ====================================================== */}
+
       <ResultSection
         title="Word Segmentation"
-        description="Text segmented into words."
+        description="Syllables grouped into meaningful Burmese words."
+        icon={<Layers3 size={18} />}
+        iconStyle="
+          bg-blue-100
+          text-blue-600
+        "
+        copyText={words.join(" | ")}
       >
         <div className="flex flex-wrap gap-2">
           {words.map((word, index) => (
             <span
-              key={index}
+              key={`${word}-${index}`}
               className="
                 rounded-lg
                 border
-                border-yellow-200
-                bg-yellow-50
+                border-blue-100
+                bg-blue-50
                 px-4
                 py-2
-                text-stone-800
+                text-[15px]
+                text-blue-900
+                transition
+                hover:border-blue-300
+                hover:bg-blue-100
               "
             >
               {word}
@@ -128,28 +213,61 @@ export default function AnalysisResults() {
         </div>
       </ResultSection>
 
-      {/* POS */}
+      {/* =====================================================
+          POS TAGGING
+      ====================================================== */}
+
       <ResultSection
         title="POS Tagging"
-        description="Each word with its predicted part-of-speech tag."
+        description="Each segmented word with its predicted part-of-speech tag."
+        icon={<Tag size={18} />}
+        iconStyle="
+          bg-violet-100
+          text-violet-600
+        "
+        copyText={posTags.map((item) => `${item.word}/${item.tag}`).join(" ")}
       >
         <div className="flex flex-wrap gap-3">
           {posTags.map((item, index) => (
             <div
-              key={index}
+              key={`${item.word}-${index}`}
               className={`
-                min-w-[100px]
+                min-w-[105px]
                 rounded-xl
                 border
                 px-4
                 py-3
                 text-center
-                ${getPosColor(item.tag)}
-            `}
-            >
-              <p className="text-base text-stone-800">{item.word}</p>
+                transition
+                hover:-translate-y-0.5
+                hover:shadow-sm
 
-              <p className="mt-1 text-xs font-semibold">{item.tag}</p>
+                ${getPosColor(item.tag)}
+              `}
+            >
+              {/* Burmese word */}
+
+              <p
+                className="
+                  text-[15px]
+                  font-medium
+                "
+              >
+                {item.word}
+              </p>
+
+              {/* POS tag */}
+
+              <p
+                className="
+                  mt-1
+                  text-[10px]
+                  font-bold
+                  tracking-wider
+                "
+              >
+                {item.tag}
+              </p>
             </div>
           ))}
         </div>
@@ -158,22 +276,154 @@ export default function AnalysisResults() {
   );
 }
 
+/* =========================================================
+   RESULT SECTION COMPONENT
+========================================================= */
+
 interface ResultSectionProps {
   title: string;
   description: string;
-  children: React.ReactNode;
+  children: ReactNode;
+  icon: ReactNode;
+  iconStyle: string;
+  copyText: string;
 }
 
-function ResultSection({ title, description, children }: ResultSectionProps) {
-  return (
-    <div className="mb-4 rounded-xl border border-stone-100 p-5 last:mb-0">
-      <div className="mb-4">
-        <h3 className="font-semibold text-stone-800">{title}</h3>
+function ResultSection({
+  title,
+  description,
+  children,
+  icon,
+  iconStyle,
+  copyText,
+}: ResultSectionProps) {
+  const [copied, setCopied] = useState(false);
 
-        <p className="mt-1 text-sm text-stone-500">{description}</p>
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(copyText);
+
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to copy text:", error);
+    }
+  };
+  return (
+    <div
+      className="
+        mb-3
+        rounded-xl
+        border
+        border-stone-100
+        bg-[#FFFEFC]
+        p-4
+        last:mb-0
+      "
+    >
+      {/* Section Header */}
+
+      <div
+        className="
+          mb-4
+          flex
+          flex-col
+          gap-3
+          sm:flex-row
+          sm:items-center
+          sm:justify-between
+        "
+      >
+        {/* Left */}
+
+        <div className="flex items-center gap-3">
+          <div
+            className={`
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+
+              ${iconStyle}
+            `}
+          >
+            {icon}
+          </div>
+
+          <div>
+            <h3
+              className="
+                text-sm
+                font-semibold
+                text-stone-800
+              "
+            >
+              {title}
+            </h3>
+
+            <p
+              className="
+                mt-0.5
+                text-xs
+                text-stone-500
+              "
+            >
+              {description}
+            </p>
+          </div>
+        </div>
+
+        {/* Copy Button */}
+
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="
+            flex
+            shrink-0
+            items-center
+            justify-center
+            gap-2
+            self-start
+            rounded-lg
+            border
+            border-amber-100
+            bg-amber-50
+            px-3
+            py-2
+            text-xs
+            font-medium
+            text-stone-600
+            transition
+            hover:border-amber-200
+            hover:bg-amber-100
+            hover:text-amber-800
+            sm:self-auto
+          "
+        >
+          {copied ? (
+            <>
+              <Check size={14} />
+              Copied!
+            </>
+          ) : (
+            <>
+              <Copy size={14} />
+              Copy
+            </>
+          )}
+        </button>
       </div>
 
-      {children}
+      {/* Result Content */}
+
+      <div>{children}</div>
     </div>
   );
 }
