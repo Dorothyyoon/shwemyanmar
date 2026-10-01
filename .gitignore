@@ -38,6 +38,11 @@ data/raw/*
 # Generated/processed data
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/train.jsonl
+!data/processed/validation.jsonl
+!data/processed/test.jsonl
+!data/processed/pos2id.json
+!data/processed/id2pos.json
 
 # Trained models
 models/segmentation/*
