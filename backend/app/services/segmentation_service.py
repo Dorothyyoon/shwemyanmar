@@ -1,104 +1,255 @@
+import json
 from pathlib import Path
-from transformers import pipeline
+
+import regex
+import torch
+import torch.nn as nn
+from safetensors.torch import load_file
 
 
-# ==========================================
-# 1. Model path
-# ==========================================
+# =========================================================
+# Paths
+# =========================================================
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
-MODEL_PATH = (
-    BACKEND_DIR
-    / "models"
-    / "segmentation"
-)
+DATA_DIR = BACKEND_DIR / "data" / "segmentation"
+MODEL_DIR = BACKEND_DIR / "models" / "segmentation"
+
+TRAIN_PATH = DATA_DIR / "train.jsonl"
+VAL_PATH = DATA_DIR / "validation.jsonl"
+TEST_PATH = DATA_DIR / "test.jsonl"
+
+MODEL_PATH = MODEL_DIR / "model.safetensors"
 
 
-# ==========================================
-# 2. Load model once
-# ==========================================
+# =========================================================
+# Labels
+# =========================================================
+
+ID2LABEL = {
+    0: "<PAD>",
+    1: "B",
+    2: "I",
+}
+
+
+# =========================================================
+# Load dataset
+# =========================================================
+
+def load_jsonl(path: Path):
+    data = []
+
+    with open(path, "r", encoding="utf-8") as file:
+        for line in file:
+            line = line.strip()
+
+            if line:
+                data.append(json.loads(line))
+
+    return data
+
+
+# =========================================================
+# Build vocabulary
+# =========================================================
+
+def build_vocab(datasets):
+    vocab = {
+        "<PAD>": 0,
+        "<UNK>": 1,
+    }
+
+    for dataset in datasets:
+        for item in dataset:
+            for unit in item["seg_units"]:
+                if unit not in vocab:
+                    vocab[unit] = len(vocab)
+
+    return vocab
+
+
+# =========================================================
+# Transformer model
+# =========================================================
+
+class TransformerSegmenter(nn.Module):
+
+    def __init__(
+        self,
+        vocab_size,
+        num_classes=3,
+        d_model=128,
+        nhead=4,
+        num_layers=2,
+        max_len=256,
+    ):
+        super().__init__()
+
+        self.embedding = nn.Embedding(
+            vocab_size,
+            d_model,
+            padding_idx=0,
+        )
+
+        self.pos_embedding = nn.Embedding(
+            max_len,
+            d_model,
+        )
+
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=d_model,
+            nhead=nhead,
+            batch_first=True,
+        )
+
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer,
+            num_layers=num_layers,
+        )
+
+        self.classifier = nn.Linear(
+            d_model,
+            num_classes,
+        )
+
+    def forward(self, input_ids):
+
+        batch_size, seq_len = input_ids.shape
+
+        positions = torch.arange(
+            seq_len,
+            device=input_ids.device,
+        ).unsqueeze(0)
+
+        x = (
+            self.embedding(input_ids)
+            + self.pos_embedding(positions)
+        )
+
+        padding_mask = input_ids.eq(0)
+
+        x = self.transformer(
+            x,
+            src_key_padding_mask=padding_mask,
+        )
+
+        return self.classifier(x)
+
+
+# =========================================================
+# Load vocabulary
+# =========================================================
+
+print("Loading segmentation datasets...")
+
+train_data = load_jsonl(TRAIN_PATH)
+val_data = load_jsonl(VAL_PATH)
+test_data = load_jsonl(TEST_PATH)
+
+vocab = build_vocab([
+    train_data,
+    val_data,
+    test_data,
+])
+
+print(f"Segmentation vocabulary size: {len(vocab)}")
+
+if len(vocab) != 1401:
+    raise RuntimeError(
+        f"Unexpected vocabulary size: {len(vocab)}. Expected 1401."
+    )
+
+
+# =========================================================
+# Load model
+# =========================================================
 
 print("Loading Burmese segmentation model...")
 
-segmenter = pipeline(
-    "token-classification",
-    model=str(MODEL_PATH),
-    tokenizer=str(MODEL_PATH),
-    aggregation_strategy="simple",
-    device=-1,
+model = TransformerSegmenter(
+    vocab_size=1401,
+    num_classes=3,
+    d_model=128,
+    nhead=4,
+    num_layers=2,
+    max_len=256,
 )
 
-print("Burmese segmentation model loaded!")
+state_dict = load_file(str(MODEL_PATH))
+
+model.load_state_dict(state_dict)
+
+model.eval()
+
+print("Burmese segmentation model loaded successfully!")
 
 
-# ==========================================
-# 3. Raw model prediction
-# ==========================================
+# =========================================================
+# Text preprocessing
+# =========================================================
 
-def predict_segmentation(text: str):
+def graphemes(text: str) -> list[str]:
+    return regex.findall(r"\X", text)
+
+
+# =========================================================
+# Segmentation
+# =========================================================
+
+def segment_text(text: str) -> list[str]:
 
     text = text.strip()
 
     if not text:
         return []
 
-    predictions = segmenter(text)
+    units = graphemes(text)
 
-    return predictions
+    # Model maximum sequence length
+    if len(units) > 256:
+        units = units[:256]
 
+    input_ids = [
+        vocab.get(unit, vocab["<UNK>"])
+        for unit in units
+    ]
 
-# ==========================================
-# 4. Remove BERT ## markers
-# ==========================================
+    input_tensor = torch.tensor(
+        [input_ids],
+        dtype=torch.long,
+    )
 
-def clean_token(token: str) -> str:
+    with torch.no_grad():
 
-    return token.replace("##", "")
+        logits = model(input_tensor)
 
+        predictions = torch.argmax(
+            logits,
+            dim=-1,
+        )[0].tolist()
 
-# ==========================================
-# 5. Convert B/I/O predictions into words
-# ==========================================
-
-def segment_text(text: str) -> list[str]:
-
-    predictions = predict_segmentation(text)
-
-    if not predictions:
-        return []
+    labels = [
+        ID2LABEL[prediction]
+        for prediction in predictions
+    ]
 
     words = []
-
     current_word = ""
 
-    for prediction in predictions:
-
-        label = prediction["entity_group"]
-
-        token = clean_token(
-            prediction["word"]
-        )
+    for unit, label in zip(units, labels):
 
         if label == "B":
 
             if current_word:
                 words.append(current_word)
 
-            current_word = token
+            current_word = unit
 
         elif label == "I":
 
-            current_word += token
-
-        elif label == "O":
-
-            if current_word:
-                words.append(current_word)
-                current_word = ""
-
-            if token.strip():
-                words.append(token)
+            current_word += unit
 
     if current_word:
         words.append(current_word)

@@ -5,42 +5,24 @@ from transformers import (
     AutoModelForTokenClassification,
 )
 
+MODEL_PATH = Path("models/segmentation")
 
-BASE_DIR = Path(__file__).resolve().parent
-
-MODEL_PATH = (
-    BASE_DIR
-    / "models"
-    / "segmentation"
-)
-
-
-print("=" * 50)
-print("SHWE MYANMAR SEGMENTATION MODEL TEST")
-print("=" * 50)
-
-print("\nModel path:")
-print(MODEL_PATH)
-
+print("Model path:", MODEL_PATH.resolve())
 
 print("\nLoading tokenizer...")
+tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 
-tokenizer = AutoTokenizer.from_pretrained(
-    MODEL_PATH
-)
+print("Loading model...")
+model = AutoModelForTokenClassification.from_pretrained(MODEL_PATH)
 
-print("Tokenizer loaded successfully!")
+print("\n✅ Model loaded successfully!")
 
+print("\nModel config label mapping:")
+print("id2label:", model.config.id2label)
+print("label2id:", model.config.label2id)
 
-print("\nLoading segmentation model...")
+print("\nNumber of labels:")
+print(model.config.num_labels)
 
-model = AutoModelForTokenClassification.from_pretrained(
-    MODEL_PATH
-)
-
-print("Segmentation model loaded successfully!")
-
-
-print("\nModel labels:")
-
-print(model.config.id2label)
+print("\nTokenizer:")
+print(type(tokenizer).__name__)

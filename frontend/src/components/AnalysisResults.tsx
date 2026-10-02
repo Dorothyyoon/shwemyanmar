@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import type { AnalysisResult } from "../types/analysis";
-
+import { getPosLabel } from "../utils/posLabels";
 import {
   AudioWaveform,
   Check,
@@ -17,54 +17,110 @@ import {
 ========================================================= */
 
 function getPosColor(tag: string) {
-  switch (tag) {
-    case "NOUN":
+  switch (tag.toLowerCase()) {
+    case "n":
+      return `
+        border-blue-200
+        bg-blue-50
+        text-blue-700
+      `;
+
+    case "v":
       return `
         border-emerald-200
         bg-emerald-50
         text-emerald-700
       `;
 
-    case "VERB":
-      return `
-        border-rose-200
-        bg-rose-50
-        text-rose-700
-      `;
-
-    case "PRON":
-      return `
-        border-sky-200
-        bg-sky-50
-        text-sky-700
-      `;
-
-    case "ADV":
-      return `
-        border-amber-200
-        bg-amber-50
-        text-amber-700
-      `;
-
-    case "AUX":
+    case "pron":
       return `
         border-violet-200
         bg-violet-50
         text-violet-700
       `;
 
-    case "ADJ":
+    case "adj":
+      return `
+        border-pink-200
+        bg-pink-50
+        text-pink-700
+      `;
+
+    case "adv":
       return `
         border-orange-200
         bg-orange-50
         text-orange-700
       `;
 
-    case "PUNCT":
+    case "conj":
+      return `
+        border-yellow-200
+        bg-yellow-50
+        text-yellow-700
+      `;
+
+    case "ppm":
+      return `
+        border-purple-200
+        bg-purple-50
+        text-purple-700
+      `;
+
+    case "part":
+      return `
+        border-amber-200
+        bg-amber-50
+        text-amber-700
+      `;
+
+    case "num":
+      return `
+        border-cyan-200
+        bg-cyan-50
+        text-cyan-700
+      `;
+
+    case "punc":
       return `
         border-stone-200
         bg-stone-50
         text-stone-600
+      `;
+
+    case "abb":
+      return `
+        border-slate-200
+        bg-slate-50
+        text-slate-700
+      `;
+
+    case "fw":
+      return `
+        border-indigo-200
+        bg-indigo-50
+        text-indigo-700
+      `;
+
+    case "int":
+      return `
+        border-rose-200
+        bg-rose-50
+        text-rose-700
+      `;
+
+    case "sb":
+      return `
+        border-neutral-200
+        bg-neutral-50
+        text-neutral-700
+      `;
+
+    case "tn":
+      return `
+        border-teal-200
+        bg-teal-50
+        text-teal-700
       `;
 
     default:
@@ -266,7 +322,7 @@ export default function AnalysisResults({ result }: AnalysisResultsProps) {
                   tracking-wider
                 "
               >
-                {item.tag}
+                {getPosLabel(item.tag)}
               </p>
             </div>
           ))}
