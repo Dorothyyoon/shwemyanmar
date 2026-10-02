@@ -16,9 +16,9 @@ export default function Hero() {
       <div className="absolute -right-16 top-4 h-64 w-64 rounded-full bg-yellow-200/20 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-12 text-center">
-        <p className="text-xs font-semibold tracking-[0.28em] text-amber-700">
+        {/* <p className="text-xs font-semibold tracking-[0.28em] text-amber-700">
           AI-POWERED BURMESE LANGUAGE ANALYSIS
-        </p>
+        </p> */}
 
         <h2
           className="
@@ -34,8 +34,8 @@ export default function Hero() {
         </h2>
 
         <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-7 text-stone-600">
-          Explore Burmese text with AI-powered syllable segmentation, word
-          segmentation, POS tagging and linguistic insights.
+          Explore Burmese text with syllable segmentation, word segmentation,
+          POS tagging and linguistic insights.
         </p>
       </div>
     </section>
