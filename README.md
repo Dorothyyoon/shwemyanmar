@@ -142,39 +142,51 @@ Shwe-Myanmar/
 ├── README.md
 └── LICENSE
 ```         
-🚀 Installation & Local Setup
-Prerequisites
-Python 3.10 or higher
+## 🚀 Installation & Local Setup
 
-Node.js 18+ and npm / pnpm
+- **Prerequisites**
+  - **Python:** `3.10+`
+  - **Node.js:** `18+` (with `npm` or `pnpm`)
 
-1. Clone the Repository
-   git clone [https://github.com/your-username/Shwe-Myanmar.git](https://github.com/your-username/Shwe-Myanmar.git)
-cd Shwe-Myanmar
+---
 
-2.Setups
-  git lfs install
-  git lfs pull
-  git lfs ls-files
+## 1️⃣ Clone the Repository
+```bash
+git clone https://github.com/Dorothyyoon/shwemyanmar
+```
 
-  output:
-    backend/models/pos/model.safetensors
-    backend/models/segmentation/model.safetensors
+2️⃣ Track & Fetch ML Models (Git LFS)
+Bash
+git lfs install
+git lfs pull
+git lfs ls-files
+Expected Output:
 
-  ##Backend
-  python -m venv .venv
-  .\.venv\Scripts\Activate.ps1
-  python -m pip install --upgrade pip
-  pip install -r requirements.txt
-  uvicorn app.main:app --reload
+Plaintext
+backend/models/pos/model.safetensors
+backend/models/segmentation/model.safetensors
+3️⃣ Backend Setup (FastAPI)
+PowerShell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+API Server: Runs locally at http://localhost:8000
 
+4️⃣ Frontend Setup (React + Vite)
+Bash
+cd frontend
+npm install
+npm run dev
+Web Interface: Accessible at http://localhost:5173
 
-  ##Frontend
-  npm install
-  npm run dev
+📡 Sample API Response
+Endpoint: POST /api/analyze
 
-  Sample Response 
-  {
+JSON
+{
   "text": "ကျွန်တော်မနက်ဖြန်ကျောင်းသွားမယ်။",
   "statistics": {
     "characters": 32,
@@ -182,14 +194,21 @@ cd Shwe-Myanmar
     "words": 6,
     "pos_tags": 5
   },
-  "words": ["ကျွန်တော်", "မနက်ဖြန်", "ကျောင်း", "သွား", "မယ်", "။"],
+  "words": [
+    "ကျွန်တော်",
+    "မနက်ဖြန်",
+    "ကျောင်း",
+    "သွား",
+    "မယ်",
+    "။"
+  ],
   "pos_tags": [
-    {"word": "ကျွန်တော်", "tag": "pron", "label": "Pronoun"},
-    {"word": "မနက်ဖြန်", "tag": "n", "label": "Noun"},
-    {"word": "ကျောင်း", "tag": "n", "label": "Noun"},
-    {"word": "သွား", "tag": "v", "label": "Verb"},
-    {"word": "မယ်", "tag": "part", "label": "Particle"},
-    {"word": "။", "tag": "punc", "label": "Punctuation"}
+    { "word": "ကျွန်တော်", "tag": "pron", "label": "Pronoun" },
+    { "word": "မနက်ဖြန်", "tag": "n", "label": "Noun" },
+    { "word": "ကျောင်း", "tag": "n", "label": "Noun" },
+    { "word": "သွား", "tag": "v", "label": "Verb" },
+    { "word": "မယ်", "tag": "part", "label": "Particle" },
+    { "word": "။", "tag": "punc", "label": "Punctuation" }
   ]
 }
 
