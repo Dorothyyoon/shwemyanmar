@@ -156,31 +156,31 @@ git clone https://github.com/Dorothyyoon/shwemyanmar
 ```
 
 2️⃣ Track & Fetch ML Models (Git LFS)
-Bash
-git lfs install
-git lfs pull
-git lfs ls-files
-Expected Output:
 
-Plaintext
-backend/models/pos/model.safetensors
-backend/models/segmentation/model.safetensors
+    git lfs install
+    git lfs pull
+    git lfs ls-files
+    Expected Output:
+
+    backend/models/pos/model.safetensors
+    backend/models/segmentation/model.safetensors
+
 3️⃣ Backend Setup (FastAPI)
-PowerShell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-API Server: Runs locally at http://localhost:8000
+
+    cd backend
+    python -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+    uvicorn app.main:app --reload
+    API Server: Runs locally at http://localhost:8000
 
 4️⃣ Frontend Setup (React + Vite)
-Bash
-cd frontend
-npm install
-npm run dev
-Web Interface: Accessible at http://localhost:5173
+    
+    cd frontend
+    npm install
+    npm run dev
+    Web Interface: Accessible at http://localhost:5173
 
 📡 Sample API Response
 Endpoint: POST /api/analyze
